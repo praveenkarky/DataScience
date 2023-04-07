@@ -26,7 +26,7 @@ class userDS:
         lesser=[]
         greater=[]
         descriptive= pd.DataFrame(index=["Mean","Median","Mode","25%","50%","75%","99%","100%","Min","Max","IQR",'1.5Rule','Lesser',
-                                    'Greater'],columns=quant)
+                                    'Greater','Skew','Kurtosis','var','std'],columns=quant)
         for columnNames in quant:
             descriptive[columnNames]["Mean"]=data[columnNames].mean()
             descriptive[columnNames]["Median"]=data[columnNames].median()
@@ -42,6 +42,11 @@ class userDS:
             descriptive[columnNames]["1.5Rule"]= 1.5*descriptive[columnNames]["IQR"]
             descriptive[columnNames]["Lesser"]=descriptive[columnNames]["25%"]-descriptive[columnNames]["1.5Rule"]
             descriptive[columnNames]["Greater"]=descriptive[columnNames]["75%"]+descriptive[columnNames]["1.5Rule"]
+            descriptive[columnNames]["Skew"]= data[columnNames].skew()
+            descriptive[columnNames]["Kurtosis"]= data[columnNames].kurtosis()
+            descriptive[columnNames]["var"]= data[columnNames].var()
+            descriptive[columnNames]["std"]= data[columnNames].std()
+            
         return descriptive
     
   
@@ -104,3 +109,35 @@ class userDS:
             #print (f)
         for columnNames in greater:
             data[columnNames][data[columnNames] > descriptive[columnNames]["Greater"]] = descriptive[columnNames]["Greater"]       
+
+    def stdNBGraph(dataset):
+            import seaborn as sns
+            mean= dataset.mean()
+            std= dataset.std()
+            z_score= [((j-mean)/std) for j in dataset]
+            sns.distplot(z_score,kde=True)        
+ 
+    def get_pdf_probability(dataset,startrange,endrange):
+        import matplotlib.pyplot as plt
+        from scipy.stats import norm
+        import seaborn as sns
+        #startrange=40
+        #endrange=90
+        ax= sns.distplot(dataset,kde=True,kde_kws={'color':'blue'},color='Green')
+        plt.axvline(startrange,color='red')
+        plt.axvline(endrange,color='red')
+        #generate a sample to get the Mean & Std
+        sample= dataset
+        sample_mean=sample.mean()
+        sample_std=sample.std()
+        print('Mean=%.3f,Standard Deviasion=%.3f' %(sample_mean,sample_std))
+        #define the distriibution
+        dist= norm(sample_mean,sample_std)
+        #Sample Probability of a range of outcomes
+        #values= [value for value in range(startrange,endrange)]
+        #values
+        probablity=[dist.pdf(value) for value in range(startrange,endrange)]
+        probs= sum(probablity)
+        probs
+        print("The area between the range({},{}):{}".format(startrange,endrange,probs))
+        return probs
